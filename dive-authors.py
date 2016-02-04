@@ -9,8 +9,6 @@ import datetime
 
 project_names = ('sailthru_tools', 'containers', 'sailthru-python-client', 'dive_sailthru_client', 'dive-email-inliner', 'sassy-ink')
 projects_path = os.path.join('/', 'Users', 'david', 'Development', 'work')
-since = '2010-01-01'
-until = '2016-01-31'
 
 
 class DiveRunner(object):
@@ -166,18 +164,11 @@ def main():
     for project_name in project_names:
         repo_path = os.path.join(projects_path, project_name)
 
-        # print repo_path
         runner = DiveRunner()
         runner.repo = repo_path
         runner.project_name = project_name
 
-        # We need the repo above to be set before we read the git config.
-        # config.init(runner)
-
-        runner.list_file_types = True
-
-        interval.set_since(since)
-        interval.set_until(until)
+        # runner.list_file_types = True
 
         runner.output()
 
