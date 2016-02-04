@@ -1,4 +1,4 @@
-from gitinspector import extensions
+# from gitinspector import extensions
 from gitinspector import interval
 from gitinspector import filtering
 from gitinspector.changes import Commit, FileDiff, AuthorInfo
@@ -11,7 +11,6 @@ project_names = ('sailthru_tools', 'containers', 'sailthru-python-client', 'dive
 projects_path = os.path.join('/', 'Users', 'david', 'Development', 'work')
 since = '2010-01-01'
 until = '2016-01-31'
-valid_extensions = "txt,py,html,css,js,rst"
 
 
 class DiveRunner(object):
@@ -42,7 +41,9 @@ class DiveRunner(object):
 
         for date_string, author_name in sorted(authordateinfo_list):
             authorinfo = authordateinfo_list.get(
-                (date_string, author_name))
+                (date_string, author_name)
+            )
+
             print row.format(
                 author=author_name,
                 date=date_string,
@@ -95,9 +96,9 @@ class Changes(object):
                                            "author") and not filtering.set_filtered(
                 commit.email, "email") and not \
                     filtering.set_filtered(commit.sha, "revision"):
-                extensions.add_located(FileDiff.get_extension(j))
+                # extensions.add_located(FileDiff.get_extension(j))
 
-                if FileDiff.is_valid_extension(j):
+                if is_valid_extension(j):
                     found_valid_extension = True
                     filediff = FileDiff(j)
                     commit.add_filediff(filediff)
@@ -153,6 +154,13 @@ class Changes(object):
     def get_latest_email_by_author(self, name):
         return self.emails_by_author[name]
 
+def is_valid_extension(string):
+    """
+    Hacky way to say all extensions are valid.
+    :param str string: The commit line.
+    :return: True
+    """
+    return True
 
 def main():
     for project_name in project_names:
@@ -167,8 +175,6 @@ def main():
         # config.init(runner)
 
         runner.list_file_types = True
-
-        extensions.define(valid_extensions)
 
         interval.set_since(since)
         interval.set_until(until)
