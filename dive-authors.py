@@ -1,5 +1,4 @@
 # from gitinspector import extensions
-from gitinspector import interval
 from gitinspector import filtering
 from gitinspector.changes import Commit, FileDiff, AuthorInfo
 import os
