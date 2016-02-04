@@ -64,7 +64,6 @@ class Changes(object):
 
         git_log_r = subprocess.Popen(
             "git log --reverse --pretty=\"%cd|%H|%aN|%aE\" --stat=100000,8192 --no-merges -w " +
-            interval.get_since() + interval.get_until() +
             "{0} --date=short".format("-C -C -M" if hard else ""),
             shell=True, bufsize=1, stdout=subprocess.PIPE).stdout
         commit = None
@@ -100,9 +99,6 @@ class Changes(object):
                     found_valid_extension = True
                     filediff = FileDiff(j)
                     commit.add_filediff(filediff)
-
-        if interval.has_interval() and len(self.commits) > 0:
-            interval.set_ref(self.commits[0].sha)
 
         if len(self.commits) > 0:
             self.first_commit_date = datetime.date(
@@ -167,8 +163,6 @@ def main():
         runner = DiveRunner()
         runner.repo = repo_path
         runner.project_name = project_name
-
-        # runner.list_file_types = True
 
         runner.output()
 
