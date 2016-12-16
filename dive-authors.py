@@ -4,11 +4,15 @@ from gitinspector.changes import Commit, FileDiff, AuthorInfo
 import os
 import subprocess
 import datetime
+import csv
 
 
-project_names = ('sailthru_tools', 'containers', 'sailthru-python-client', 'dive_sailthru_client', 'dive-email-inliner', 'sassy-ink')
-projects_path = os.path.join('/', 'Users', 'david', 'Development', 'work')
+project_names = ('campaignmonitor_scripts', 'campaignmonitor-templates', 'caribou', 'chef-repo', 'containers', 'corporate-site', 'datadive', 'datascripts', 'datasilo', 'datatranslator', 'dive_experiments', 'dive_sailthru_client', 'dive-brand-studio', 'dive-email-widgets', 'dive-form-fields', 'dive-google-widgets', 'dive-mobile-android', 'dive-mobile-ios', 'dive-pubs', 'divesite', 'divesite-docker', 'divesite-tools', 'dive-vis', 'django-ckeditor', 'docker-drupal', 'dragonclaw', 'event-scrapers', 'facebook-api-interactions', 'fileflow', 'git-authors', 'living-styleguide', 'rlpsys', 'sailthru_tools', 'sassy-ink', 'shiny_apps', 'socialmediatoday', 'stalker', 'waffle.io-due-dates')
+projects_path = './' #os.path.join('/', 'Users', 'david', 'Development', 'work')
 
+outfilename = 'git_stats.csv'
+outfile = open(outfilename, 'wb')
+outwriter = csv.writer(outfile)
 
 class DiveRunner(object):
     def __init__(self):
@@ -34,20 +38,21 @@ class DiveRunner(object):
 
         authordateinfo_list = the_changes.get_authordateinfo_list()
 
-        row = '"{author}","{date}","{project}","{added}","{deleted}"'
+        # row = '"{author}","{date}","{project}","{added}","{deleted}"'
 
         for date_string, author_name in sorted(authordateinfo_list):
             authorinfo = authordateinfo_list.get(
                 (date_string, author_name)
             )
 
-            print row.format(
-                author=author_name,
-                date=date_string,
-                project=self.project_name,
-                added=authorinfo.insertions,
-                deleted=authorinfo.deletions
-            )
+            if datetime.datetime.strptime(date_string, '%Y-%m-%d') > datetime.datetime(2016, 1, 1):
+                outwriter.writerow([
+                    author_name,
+                    date_string,
+                    self.project_name,
+                    authorinfo.insertions,
+                    authorinfo.deletions
+                ])
 
         os.chdir(previous_directory)
 
@@ -168,3 +173,5 @@ def main():
 
 if __name__ == "__main__":
     main()
+    
+outfile.close()
