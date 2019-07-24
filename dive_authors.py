@@ -6,8 +6,55 @@ import subprocess
 import datetime
 import csv
 
-
-project_names = ('campaignmonitor_scripts', 'campaignmonitor-templates', 'caribou', 'chef-repo', 'containers', 'corporate-site', 'datadive', 'datascripts', 'datasilo', 'datatranslator', 'dive_experiments', 'dive_sailthru_client', 'dive-brand-studio', 'dive-email-widgets', 'dive-form-fields', 'dive-google-widgets', 'dive-mobile-android', 'dive-mobile-ios', 'dive-pubs', 'divesite', 'divesite-docker', 'divesite-tools', 'dive-vis', 'django-ckeditor', 'docker-drupal', 'dragonclaw', 'event-scrapers', 'facebook-api-interactions', 'fileflow', 'git-authors', 'living-styleguide', 'rlpsys', 'sailthru_tools', 'sassy-ink', 'shiny_apps', 'socialmediatoday', 'stalker', 'waffle.io-due-dates')
+# A list of repositories updated after 01/01/2018
+PROJECT_NAMES = (
+    'django-autosave',
+    'datadump',
+    'mr-clean',
+    'dive-dr',
+    'TarPy',
+    'django-dbsettings',
+    'django-site-metatags',
+    'CIOregontrail',
+    'django-ckeditor',
+    'divesite-docker',
+    'es6-presentation',
+    'fileflow',
+    'dive-brand-studio',
+    'Secret-Santakkuh',
+    'easy_django_mockups',
+    'living-styleguide',
+    'link-tracker',
+    'sourcelist',
+    'incident-response-docs',
+    'locustdive',
+    'dive-design-system',
+    'js-tools',
+    'dragonclaw',
+    'dive_sailthru_updater',
+    'lytics-tools',
+    'dive-kickstart',
+    'leadsquared-tools',
+    'scrapinghub-event-sites',
+    'dive-form-fields',
+    'support',
+    'lambdas',
+    'designsite',
+    'sourcedive',
+    'dive_audience_tools',
+    'dive-ad-templates',
+    'styleguidefail',
+    'corporate-site',
+    'cloudflare-tools',
+    'dive_sailthru_client',
+    'sailthru_tools',
+    'accountant',
+    'datadive',
+    'rlpsys',
+    'datascripts',
+    'dive-email-inliner',
+    'divesite',
+)
 projects_path = './' #os.path.join('/', 'Users', 'david', 'Development', 'work')
 
 outfilename = 'git_stats.csv'
@@ -45,7 +92,9 @@ class DiveRunner(object):
                 (date_string, author_name)
             )
 
-            if datetime.datetime.strptime(date_string, '%Y-%m-%d') > datetime.datetime(2016, 1, 1):
+            change = datetime.datetime.strptime(date_string, '%Y-%m-%d')
+
+            if change > datetime.datetime(2018, 1, 1) and change < datetime.datetime(2019, 1, 1):
                 outwriter.writerow([
                     author_name,
                     date_string,
@@ -161,7 +210,8 @@ def is_valid_extension(string):
     return True
 
 def main():
-    for project_name in project_names:
+    for project_name in PROJECT_NAMES:
+        os.system('git clone git@github.com:industrydive/%s' % project_name)
         repo_path = os.path.join(projects_path, project_name)
 
         runner = DiveRunner()
@@ -173,5 +223,5 @@ def main():
 
 if __name__ == "__main__":
     main()
-    
+
 outfile.close()
