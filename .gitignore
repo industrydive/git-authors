@@ -1,0 +1,182 @@
+.DS_Store
+local_settings.py
+*.backup
+*.bak
+/celerybeat-schedule
+/static/
+/user_media/*
+/tmp/*
+.sass-cache/
+apps/mediakit/data/
+./diveqa.sql
+./*.sql
+./*.sql.gz
+diveqa.sql
+hwbackup.sql
+*.css.map
+divedev.sql
+supervisord.pid
+celerybeat.pid
+misc_artifacts/*
+other/
+divesite.sql
+images.txt
+whoosh_index/
+divesite_*_images.txt
+divesite_images_*.txt
+divesite_download_images.sh
+stock_images/
+img2json.py
+divesite_dev_*
+apps/legacysustainablecities/scripts/*
+apps/legacyapps/scripts/*
+apns-dist-cert.pem
+build/app/settings/*
+build/web/settings/*
+# from concurrent-log-handler if you are using this folder to store logs. TECH-4287
+.__divesite.lock
+.__signup.lock
+.__tasks.lock
+.__job.lock
+
+
+# Created by https://www.gitignore.io
+
+### PyCharm ###
+# Covers JetBrains IDEs: IntelliJ, RubyMine, PhpStorm, AppCode, PyCharm
+
+*.iml
+
+## Directory-based project format:
+.idea/
+# if you remove the above rule, at least ignore the following:
+
+# User-specific stuff:
+# .idea/workspace.xml
+# .idea/tasks.xml
+# .idea/dictionaries
+
+# Sensitive or high-churn files:
+# .idea/dataSources.ids
+# .idea/dataSources.xml
+# .idea/sqlDataSources.xml
+# .idea/dynamic.xml
+# .idea/uiDesigner.xml
+
+# Gradle:
+# .idea/gradle.xml
+# .idea/libraries
+
+# Mongo Explorer plugin:
+# .idea/mongoSettings.xml
+
+## File-based project format:
+*.ipr
+*.iws
+
+## Plugin-specific files:
+
+# IntelliJ
+/out/
+
+# mpeltonen/sbt-idea plugin
+.idea_modules/
+
+# JIRA plugin
+atlassian-ide-plugin.xml
+
+# Crashlytics plugin (for Android Studio and IntelliJ)
+com_crashlytics_export_strings.xml
+crashlytics.properties
+crashlytics-build.properties
+
+
+### SublimeText ###
+# cache files for sublime text
+*.tmlanguage.cache
+*.tmPreferences.cache
+*.stTheme.cache
+
+# workspace files are user-specific
+*.sublime-workspace
+
+# project files should be checked into the repository, unless a significant
+# proportion of contributors will probably not be using SublimeText
+# *.sublime-project
+
+# sftp configuration file
+sftp-config.json
+
+
+### Python ###
+# Byte-compiled / optimized / DLL files
+__pycache__/
+*.py[cod]
+
+# C extensions
+*.so
+
+# Distribution / packaging
+.Python
+env/
+# build/
+develop-eggs/
+dist/
+downloads/
+eggs/
+.eggs/
+# lib/ COMMENT: we need this directory to be included in git
+lib64/
+parts/
+sdist/
+var/
+*.egg-info/
+.installed.cfg
+*.egg
+
+# PyInstaller
+#  Usually these files are written by a python script from a template
+#  before PyInstaller builds the exe, so as to inject date/other infos into it.
+*.manifest
+*.spec
+
+# Installer logs
+pip-log.txt
+pip-delete-this-directory.txt
+
+# Unit test / coverage reports
+htmlcov/
+.tox/
+.coverage
+.coverage.*
+.cache
+nosetests.xml
+coverage.xml
+*,cover
+
+# Translations
+*.mo
+*.pot
+
+# Django stuff:
+*.log
+
+# Sphinx documentation
+docs/_build/
+
+# PyBuilder
+target/
+
+# Local files
+divesite.sql*
+ssl
+docker-compose.yml
+fabfile_local.py
+*.pub
+*_key
+*.tar.gz
+
+node_modules
+
+# Local environment variables file. This is used by make and docker-compose.
+.env
