@@ -71,7 +71,7 @@ class DiveRunner(object):
         self.include_metrics = False
         self.list_file_types = True
         self.localize_output = False
-        self.repo = "."
+        self.repo = '.'
         self.responsibilities = False
         self.grading = False
         self.timeline = False
@@ -90,7 +90,7 @@ class DiveRunner(object):
 
         for date_string, author_name in sorted(authordateinfo_list):
             authorinfo = authordateinfo_list.get(
-                (date_string, author_name)
+                (date_string, author_name),
             )
 
             change = datetime.datetime.strptime(date_string, '%Y-%m-%d')
@@ -101,7 +101,7 @@ class DiveRunner(object):
                     date_string,
                     self.project_name,
                     authorinfo.insertions,
-                    authorinfo.deletions
+                    authorinfo.deletions,
                 ])
 
         os.chdir(previous_directory)
@@ -117,17 +117,17 @@ class Changes(object):
         self.emails_by_author = {}
 
         git_log_r = subprocess.Popen(
-            "git log --reverse --pretty=\"%cd|%H|%aN|%aE\" --stat=100000,8192 --no-merges -w " +
-            "{0} --date=short".format("-C -C -M" if hard else ""),
+            'git log --reverse --pretty="%cd|%H|%aN|%aE" --stat=100000,8192 --no-merges -w ' +
+            '{0} --date=short'.format('-C -C -M' if hard else ''),
             shell=True, bufsize=1, stdout=subprocess.PIPE).stdout
         commit = None
         found_valid_extension = False
         lines = git_log_r.readlines()
 
         for i in lines:
-            j = i.strip().decode("unicode_escape", "ignore")
-            j = j.encode("latin-1", "replace")
-            j = j.decode("utf-8", "replace")
+            j = i.strip().decode('unicode_escape', 'ignore')
+            j = j.encode('latin-1', 'replace')
+            j = j.decode('utf-8', 'replace')
 
             if Commit.is_commit_line(j):
                 (author, email) = Commit.get_author_and_email(j)
@@ -144,10 +144,9 @@ class Changes(object):
             if FileDiff.is_filediff_line(j) and not filtering.set_filtered(
                     FileDiff.get_filename(j)) and not \
                     filtering.set_filtered(commit.author,
-                                           "author") and not filtering.set_filtered(
-                commit.email, "email") and not \
-                    filtering.set_filtered(commit.sha, "revision"):
-                # extensions.add_located(FileDiff.get_extension(j))
+                                           'author') and not filtering.set_filtered(
+                commit.email, 'email') and not \
+                    filtering.set_filtered(commit.sha, 'revision'):
 
                 if is_valid_extension(j):
                     found_valid_extension = True
@@ -167,7 +166,7 @@ class Changes(object):
         return self.commits
 
     def __modify_authorinfo__(self, authors, key, commit):
-        if authors.get(key, None) == None:
+        if authors.get(key, None) is None:
             authors[key] = AuthorInfo()
 
         if commit.get_filediffs():
@@ -225,5 +224,5 @@ def main():
     outfile.close()
 
 
-if __name__ == "__main__":
+if __name__ == '__main__':
     main()
