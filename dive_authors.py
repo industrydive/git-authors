@@ -121,7 +121,6 @@ class Changes(object):
             '{0} --date=short'.format('-C -C -M' if hard else ''),
             shell=True, bufsize=1, stdout=subprocess.PIPE).stdout
         commit = None
-        found_valid_extension = False
         lines = git_log_r.readlines()
 
         for i in lines:
@@ -135,10 +134,7 @@ class Changes(object):
                 self.authors_by_email[email] = author
 
             if Commit.is_commit_line(j) or i is lines[-1]:
-                if found_valid_extension:
-                    self.commits.append(commit)
-
-                found_valid_extension = False
+                self.commits.append(commit)
                 commit = Commit(j)
 
             if FileDiff.is_filediff_line(j) and not filtering.set_filtered(
@@ -148,10 +144,8 @@ class Changes(object):
                 commit.email, 'email') and not \
                     filtering.set_filtered(commit.sha, 'revision'):
 
-                if is_valid_extension(j):
-                    found_valid_extension = True
-                    filediff = FileDiff(j)
-                    commit.add_filediff(filediff)
+                filediff = FileDiff(j)
+                commit.add_filediff(filediff)
 
         if len(self.commits) > 0:
             self.first_commit_date = datetime.date(
@@ -191,23 +185,6 @@ class Changes(object):
 
         return self.authors_dateinfo
 
-    def get_latest_author_by_email(self, name):
-        if not hasattr(name, 'decode'):
-            name = str.encode(name)
-
-        name = name.decode("unicode_escape", "ignore")
-        return self.authors_by_email[name]
-
-    def get_latest_email_by_author(self, name):
-        return self.emails_by_author[name]
-
-def is_valid_extension(string):
-    """
-    Hacky way to say all extensions are valid.
-    :param str string: The commit line.
-    :return: True
-    """
-    return True
 
 def main():
     outfile = open(OUTFILENAME, 'wb')
