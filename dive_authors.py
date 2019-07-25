@@ -187,18 +187,17 @@ class Changes(object):
 
 
 def main():
-    outfile = open(OUTFILENAME, 'wb')
-    outwriter = csv.writer(outfile)
-    for project_name in PROJECT_NAMES:
-        os.system('git clone git@github.com:industrydive/%s' % project_name)
-        repo_path = os.path.join(PROJECTS_PATH, project_name)
+    with open(OUTFILENAME, 'wb') as outfile:
+        outwriter = csv.writer(outfile)
+        for project_name in PROJECT_NAMES:
+            os.system('git clone git@github.com:industrydive/%s' % project_name)
+            repo_path = os.path.join(PROJECTS_PATH, project_name)
 
-        runner = DiveRunner(outwriter)
-        runner.repo = repo_path
-        runner.project_name = project_name
+            runner = DiveRunner(outwriter)
+            runner.repo = repo_path
+            runner.project_name = project_name
 
-        runner.output()
-    outfile.close()
+            runner.output()
 
 
 if __name__ == '__main__':
