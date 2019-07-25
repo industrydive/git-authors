@@ -55,14 +55,15 @@ PROJECT_NAMES = (
     'dive-email-inliner',
     'divesite',
 )
-projects_path = './' #os.path.join('/', 'Users', 'david', 'Development', 'work')
+PROJECTS_PATH = './'  # os.path.join('/', 'Users', 'david', 'Development', 'work')
+OUTFILENAME = 'git_stats.csv'
 
-outfilename = 'git_stats.csv'
-outfile = open(outfilename, 'wb')
-outwriter = csv.writer(outfile)
 
 class DiveRunner(object):
-    def __init__(self):
+    def __init__(self, outwriter):
+
+        self.outwriter = outwriter
+
         self.project_name = ''
 
         self.hard = False
@@ -95,7 +96,7 @@ class DiveRunner(object):
             change = datetime.datetime.strptime(date_string, '%Y-%m-%d')
 
             if change > datetime.datetime(2018, 1, 1) and change < datetime.datetime(2019, 1, 1):
-                outwriter.writerow([
+                self.outwriter.writerow([
                     author_name,
                     date_string,
                     self.project_name,
@@ -210,18 +211,19 @@ def is_valid_extension(string):
     return True
 
 def main():
+    outfile = open(OUTFILENAME, 'wb')
+    outwriter = csv.writer(outfile)
     for project_name in PROJECT_NAMES:
         os.system('git clone git@github.com:industrydive/%s' % project_name)
-        repo_path = os.path.join(projects_path, project_name)
+        repo_path = os.path.join(PROJECTS_PATH, project_name)
 
-        runner = DiveRunner()
+        runner = DiveRunner(outwriter)
         runner.repo = repo_path
         runner.project_name = project_name
 
         runner.output()
+    outfile.close()
 
 
 if __name__ == "__main__":
     main()
-
-outfile.close()
