@@ -58,6 +58,14 @@ PROJECT_NAMES = (
 PROJECTS_PATH = './'  # os.path.join('/', 'Users', 'david', 'Development', 'work')
 OUTFILENAME = 'git_stats.csv'
 
+COLUMN_HEADERS = (
+    'Author',
+    'Date',
+    'Repository',
+    'Lines added',
+    'Lines deleted',
+)
+
 
 class DiveRunner(object):
     def __init__(self, outwriter):
@@ -189,6 +197,9 @@ class Changes(object):
 def main():
     with open(OUTFILENAME, 'wb') as outfile:
         outwriter = csv.writer(outfile)
+
+        outwriter.writerow(*COLUMN_HEADERS)
+
         for project_name in PROJECT_NAMES:
             os.system('git clone git@github.com:industrydive/%s' % project_name)
             repo_path = os.path.join(PROJECTS_PATH, project_name)
