@@ -1,10 +1,14 @@
-# from gitinspector import extensions
+import click
+import csv
+import datetime
+import os
+import shutil
+import subprocess
+
 from gitinspector import filtering
 from gitinspector.changes import Commit, FileDiff, AuthorInfo
-import os
-import subprocess
-import datetime
-import csv
+from tempfile import mkdtemp
+
 
 # A list of repositories updated after 01/01/2018
 PROJECT_NAMES = (
