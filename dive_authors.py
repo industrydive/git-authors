@@ -59,16 +59,16 @@ PROJECT_NAMES = (
     'dive-email-inliner',
     'divesite',
 )
-PROJECTS_PATH = './'  # os.path.join('/', 'Users', 'david', 'Development', 'work')
-OUTFILENAME = 'git_stats.csv'
 
-COLUMN_HEADERS = (
+OUTFILE_NAME = 'git_stats.csv'
+
+COLUMN_HEADERS = [
     'Author',
     'Date',
     'Repository',
     'Lines added',
     'Lines deleted',
-)
+]
 
 
 class DiveRunner(object):
@@ -97,8 +97,6 @@ class DiveRunner(object):
         the_changes = Changes(self.hard)
 
         authordateinfo_list = the_changes.get_authordateinfo_list()
-
-        # row = '"{author}","{date}","{project}","{added}","{deleted}"'
 
         for date_string, author_name in sorted(authordateinfo_list):
             authorinfo = authordateinfo_list.get(
@@ -146,7 +144,8 @@ class Changes(object):
                 self.authors_by_email[email] = author
 
             if Commit.is_commit_line(j) or i is lines[-1]:
-                self.commits.append(commit)
+                if commit is not None:
+                    self.commits.append(commit)
                 commit = Commit(j)
 
             if FileDiff.is_filediff_line(j) and not filtering.set_filtered(
@@ -199,20 +198,30 @@ class Changes(object):
 
 
 def main():
-    with open(OUTFILENAME, 'wb') as outfile:
-        outwriter = csv.writer(outfile)
+    script_path = os.path.dirname(os.path.abspath(__file__))
+    path_to_outfile = os.path.join(script_path, OUTFILE_NAME)
 
-        outwriter.writerow(*COLUMN_HEADERS)
+    # create a temporary directory
+    temp_dir_path = mkdtemp()
+    os.chdir(temp_dir_path)
 
-        for project_name in PROJECT_NAMES:
-            os.system('git clone git@github.com:industrydive/%s' % project_name)
-            repo_path = os.path.join(PROJECTS_PATH, project_name)
+    try:
+        with open(path_to_outfile, 'wb') as outfile:
+            outwriter = csv.writer(outfile)
+            outwriter.writerow(COLUMN_HEADERS)
 
-            runner = DiveRunner(outwriter)
-            runner.repo = repo_path
-            runner.project_name = project_name
+            for project_name in PROJECT_NAMES:
+                os.system('git clone git@github.com:industrydive/%s' % project_name)
+                repo_path = os.path.join(temp_dir_path, project_name)
 
-            runner.output()
+                runner = DiveRunner(outwriter)
+                runner.repo = repo_path
+                runner.project_name = project_name
+
+                runner.output()
+    finally:
+        # clean up our temp directory
+        shutil.rmtree(temp_dir_path)
 
 
 if __name__ == '__main__':
