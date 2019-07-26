@@ -72,7 +72,7 @@ COLUMN_HEADERS = [
 
 
 class DiveRunner(object):
-    def __init__(self, outwriter):
+    def __init__(self, outwriter, year):
 
         self.outwriter = outwriter
 
@@ -88,6 +88,7 @@ class DiveRunner(object):
         self.grading = False
         self.timeline = False
         self.useweeks = False
+        self.year = year
 
     def output(self):
         previous_directory = os.getcwd()
@@ -105,7 +106,7 @@ class DiveRunner(object):
 
             change = datetime.datetime.strptime(date_string, '%Y-%m-%d')
 
-            if change > datetime.datetime(2018, 1, 1) and change < datetime.datetime(2019, 1, 1):
+            if change > datetime.datetime(self.year, 1, 1) and change < datetime.datetime(self.year + 1, 1, 1):
                 self.outwriter.writerow([
                     author_name,
                     date_string,
@@ -197,7 +198,9 @@ class Changes(object):
         return self.authors_dateinfo
 
 
-def main():
+@click.command()
+@click.option('--year', default=datetime.datetime.today().year - 1, help='Year to run git-authors for. Defaults to the previous year')
+def main(year):
     script_path = os.path.dirname(os.path.abspath(__file__))
     path_to_outfile = os.path.join(script_path, OUTFILE_NAME)
 
@@ -214,7 +217,7 @@ def main():
                 os.system('git clone git@github.com:industrydive/%s' % project_name)
                 repo_path = os.path.join(temp_dir_path, project_name)
 
-                runner = DiveRunner(outwriter)
+                runner = DiveRunner(outwriter, year)
                 runner.repo = repo_path
                 runner.project_name = project_name
 
