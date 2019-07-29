@@ -2,6 +2,7 @@ import click
 import csv
 import datetime
 import os
+import requests
 import shutil
 import subprocess
 
