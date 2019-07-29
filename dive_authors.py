@@ -163,7 +163,9 @@ def get_all_repos(access_token):
             repos.append({
                 'name': repo['name'],
                 'ssh_url': repo['ssh_url'],
+                'pushed_at': repo['pushed_at'],
             })
+        # break if we are on a page with < 100 repos (since we've reached the end)
         if len(response_json) == 100:
             page = page + 1
         else:
@@ -205,14 +207,19 @@ def main(year, access_token, outfile_name):
             repos = get_all_repos(access_token)
 
             for repo in repos:
-                os.system('git clone %s' % repo['ssh_url'])
-                repo_path = os.path.join(temp_dir_path, repo['name'])
+                # if the repo has been pushed to after the first day of the target year
+                pushed_at_time = datetime.datetime.strptime(repo['pushed_at'], '%Y-%m-%dT%H:%M:%SZ')
+                if pushed_at_time > datetime.datetime(year, 1, 1):
+                    # clone just the git history to save bandwidth and disk space
+                    os.system('git clone %s --bare' % repo['ssh_url'])
+                    repo_path = os.path.join(temp_dir_path, '%s.git' % repo['name'])
 
-                runner = DiveRunner(outwriter, year)
-                runner.repo = repo_path
-                runner.project_name = repo['name']
+                    # run our analysis
+                    runner = DiveRunner(outwriter, year)
+                    runner.repo = repo_path
+                    runner.project_name = repo['name']
 
-                runner.output()
+                    runner.output()
     finally:
         # clean up our temp directory
         shutil.rmtree(temp_dir_path)
