@@ -10,59 +10,6 @@ from gitinspector import filtering
 from gitinspector.changes import Commit, FileDiff, AuthorInfo
 from tempfile import mkdtemp
 
-
-# A list of repositories updated after 01/01/2018
-PROJECT_NAMES = (
-    'django-autosave',
-    'datadump',
-    'mr-clean',
-    'dive-dr',
-    'TarPy',
-    'django-dbsettings',
-    'django-site-metatags',
-    'CIOregontrail',
-    'django-ckeditor',
-    'divesite-docker',
-    'es6-presentation',
-    'fileflow',
-    'dive-brand-studio',
-    'Secret-Santakkuh',
-    'easy_django_mockups',
-    'living-styleguide',
-    'link-tracker',
-    'sourcelist',
-    'incident-response-docs',
-    'locustdive',
-    'dive-design-system',
-    'js-tools',
-    'dragonclaw',
-    'dive_sailthru_updater',
-    'lytics-tools',
-    'dive-kickstart',
-    'leadsquared-tools',
-    'scrapinghub-event-sites',
-    'dive-form-fields',
-    'support',
-    'lambdas',
-    'designsite',
-    'sourcedive',
-    'dive_audience_tools',
-    'dive-ad-templates',
-    'styleguidefail',
-    'corporate-site',
-    'cloudflare-tools',
-    'dive_sailthru_client',
-    'sailthru_tools',
-    'accountant',
-    'datadive',
-    'rlpsys',
-    'datascripts',
-    'dive-email-inliner',
-    'divesite',
-)
-
-OUTFILE_NAME = 'git_stats.csv'
-
 COLUMN_HEADERS = [
     'Author',
     'Date',
@@ -199,11 +146,52 @@ class Changes(object):
         return self.authors_dateinfo
 
 
+def get_all_repos(access_token):
+    repos = []
+    page = 1
+    url = 'https://api.github.com/orgs/industrydive/repos?per_page=100&page=%s&access_token=%s'
+    while True:
+        response = requests.get(url % (page, access_token))
+
+        try:
+            response.raise_for_status()
+        except requests.exceptions.HTTPError as e:
+            print 'Error: %s' % e
+
+        response_json = response.json()
+        for repo in response_json:
+            repos.append({
+                'name': repo['name'],
+                'ssh_url': repo['ssh_url'],
+            })
+        if len(response_json) == 100:
+            page = page + 1
+        else:
+            break
+
+    return repos
+
+
 @click.command()
-@click.option('--year', default=datetime.datetime.today().year - 1, help='Year to run git-authors for. Defaults to the previous year')
-def main(year):
+@click.option(
+    '--year',
+    default=datetime.datetime.today().year - 1,
+    help='Year to run git-authors for. Defaults to the previous year',
+)
+@click.option(
+    '--access-token',
+    help='Create a Github access token',
+)
+@click.option(
+    '--outfile',
+    'outfile_name',
+    default='git_stats.csv',
+    help='File name to write the git stats to',
+    required=True,
+)
+def main(year, access_token, outfile_name):
     script_path = os.path.dirname(os.path.abspath(__file__))
-    path_to_outfile = os.path.join(script_path, OUTFILE_NAME)
+    path_to_outfile = os.path.join(script_path, outfile_name)
 
     # create a temporary directory
     temp_dir_path = mkdtemp()
@@ -214,13 +202,15 @@ def main(year):
             outwriter = csv.writer(outfile)
             outwriter.writerow(COLUMN_HEADERS)
 
-            for project_name in PROJECT_NAMES:
-                os.system('git clone git@github.com:industrydive/%s' % project_name)
-                repo_path = os.path.join(temp_dir_path, project_name)
+            repos = get_all_repos(access_token)
+
+            for repo in repos:
+                os.system('git clone %s' % repo['ssh_url'])
+                repo_path = os.path.join(temp_dir_path, repo['name'])
 
                 runner = DiveRunner(outwriter, year)
                 runner.repo = repo_path
-                runner.project_name = project_name
+                runner.project_name = repo['name']
 
                 runner.output()
     finally:
