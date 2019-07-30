@@ -6,6 +6,7 @@ This repo should help make it easier on you than trying to gather stats manually
 It clones all of our repos to a temp folder (so you don't have to have them clutter your repo directory), generates the stats we need, and cleans up after itself like a good program.
 
 ## How to use
+- Install the requirements with `pipenv install`.
 - Go to [https://github.com/settings/tokens](https://github.com/settings/tokens) and generate a "personal access token" with the permission of `repo`.
 - Run the tool like `python dive_authors.py --access-token={} --year={} --outfile={}`.
   - `--access-token` is required and will be the token that you generated in the above step
