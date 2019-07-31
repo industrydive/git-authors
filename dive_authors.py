@@ -1,6 +1,7 @@
 import click
 import csv
 import datetime
+import logging
 import os
 import requests
 import shutil
@@ -156,7 +157,7 @@ def get_all_repos(access_token):
         try:
             response.raise_for_status()
         except requests.exceptions.HTTPError as e:
-            print 'Error: %s' % e
+            logging.error('Error: %s' % e)
 
         response_json = response.json()
         for repo in response_json:
