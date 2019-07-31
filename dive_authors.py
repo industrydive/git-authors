@@ -55,7 +55,7 @@ class DiveRunner(object):
 
             change = datetime.datetime.strptime(date_string, '%Y-%m-%d')
 
-            if change > datetime.datetime(self.year, 1, 1) and change < datetime.datetime(self.year + 1, 1, 1):
+            if change >= datetime.datetime(self.year, 1, 1) and change < datetime.datetime(self.year + 1, 1, 1):
                 self.outwriter.writerow([
                     author_name,
                     date_string,
