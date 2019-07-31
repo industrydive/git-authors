@@ -1,68 +1,30 @@
-# from gitinspector import extensions
+import click
+import csv
+import datetime
+import logging
+import os
+import requests
+import shutil
+import subprocess
+
 from gitinspector import filtering
 from gitinspector.changes import Commit, FileDiff, AuthorInfo
-import os
-import subprocess
-import datetime
-import csv
+from tempfile import mkdtemp
 
-# A list of repositories updated after 01/01/2018
-PROJECT_NAMES = (
-    'django-autosave',
-    'datadump',
-    'mr-clean',
-    'dive-dr',
-    'TarPy',
-    'django-dbsettings',
-    'django-site-metatags',
-    'CIOregontrail',
-    'django-ckeditor',
-    'divesite-docker',
-    'es6-presentation',
-    'fileflow',
-    'dive-brand-studio',
-    'Secret-Santakkuh',
-    'easy_django_mockups',
-    'living-styleguide',
-    'link-tracker',
-    'sourcelist',
-    'incident-response-docs',
-    'locustdive',
-    'dive-design-system',
-    'js-tools',
-    'dragonclaw',
-    'dive_sailthru_updater',
-    'lytics-tools',
-    'dive-kickstart',
-    'leadsquared-tools',
-    'scrapinghub-event-sites',
-    'dive-form-fields',
-    'support',
-    'lambdas',
-    'designsite',
-    'sourcedive',
-    'dive_audience_tools',
-    'dive-ad-templates',
-    'styleguidefail',
-    'corporate-site',
-    'cloudflare-tools',
-    'dive_sailthru_client',
-    'sailthru_tools',
-    'accountant',
-    'datadive',
-    'rlpsys',
-    'datascripts',
-    'dive-email-inliner',
-    'divesite',
-)
-projects_path = './' #os.path.join('/', 'Users', 'david', 'Development', 'work')
+COLUMN_HEADERS = [
+    'Author',
+    'Date',
+    'Repository',
+    'Lines added',
+    'Lines deleted',
+]
 
-outfilename = 'git_stats.csv'
-outfile = open(outfilename, 'wb')
-outwriter = csv.writer(outfile)
 
 class DiveRunner(object):
-    def __init__(self):
+    def __init__(self, outwriter, year):
+
+        self.outwriter = outwriter
+
         self.project_name = ''
 
         self.hard = False
@@ -70,11 +32,12 @@ class DiveRunner(object):
         self.include_metrics = False
         self.list_file_types = True
         self.localize_output = False
-        self.repo = "."
+        self.repo = '.'
         self.responsibilities = False
         self.grading = False
         self.timeline = False
         self.useweeks = False
+        self.year = year
 
     def output(self):
         previous_directory = os.getcwd()
@@ -85,22 +48,20 @@ class DiveRunner(object):
 
         authordateinfo_list = the_changes.get_authordateinfo_list()
 
-        # row = '"{author}","{date}","{project}","{added}","{deleted}"'
-
         for date_string, author_name in sorted(authordateinfo_list):
             authorinfo = authordateinfo_list.get(
-                (date_string, author_name)
+                (date_string, author_name),
             )
 
             change = datetime.datetime.strptime(date_string, '%Y-%m-%d')
 
-            if change > datetime.datetime(2018, 1, 1) and change < datetime.datetime(2019, 1, 1):
-                outwriter.writerow([
+            if change >= datetime.datetime(self.year, 1, 1) and change < datetime.datetime(self.year + 1, 1, 1):
+                self.outwriter.writerow([
                     author_name,
                     date_string,
                     self.project_name,
                     authorinfo.insertions,
-                    authorinfo.deletions
+                    authorinfo.deletions,
                 ])
 
         os.chdir(previous_directory)
@@ -116,17 +77,16 @@ class Changes(object):
         self.emails_by_author = {}
 
         git_log_r = subprocess.Popen(
-            "git log --reverse --pretty=\"%cd|%H|%aN|%aE\" --stat=100000,8192 --no-merges -w " +
-            "{0} --date=short".format("-C -C -M" if hard else ""),
+            'git log --reverse --pretty="%cd|%H|%aN|%aE" --stat=100000,8192 --no-merges -w ' +
+            '{0} --date=short'.format('-C -C -M' if hard else ''),
             shell=True, bufsize=1, stdout=subprocess.PIPE).stdout
         commit = None
-        found_valid_extension = False
         lines = git_log_r.readlines()
 
         for i in lines:
-            j = i.strip().decode("unicode_escape", "ignore")
-            j = j.encode("latin-1", "replace")
-            j = j.decode("utf-8", "replace")
+            j = i.strip().decode('unicode_escape', 'ignore')
+            j = j.encode('latin-1', 'replace')
+            j = j.decode('utf-8', 'replace')
 
             if Commit.is_commit_line(j):
                 (author, email) = Commit.get_author_and_email(j)
@@ -134,24 +94,19 @@ class Changes(object):
                 self.authors_by_email[email] = author
 
             if Commit.is_commit_line(j) or i is lines[-1]:
-                if found_valid_extension:
+                if commit is not None:
                     self.commits.append(commit)
-
-                found_valid_extension = False
                 commit = Commit(j)
 
             if FileDiff.is_filediff_line(j) and not filtering.set_filtered(
                     FileDiff.get_filename(j)) and not \
                     filtering.set_filtered(commit.author,
-                                           "author") and not filtering.set_filtered(
-                commit.email, "email") and not \
-                    filtering.set_filtered(commit.sha, "revision"):
-                # extensions.add_located(FileDiff.get_extension(j))
+                                           'author') and not filtering.set_filtered(
+                commit.email, 'email') and not \
+                    filtering.set_filtered(commit.sha, 'revision'):
 
-                if is_valid_extension(j):
-                    found_valid_extension = True
-                    filediff = FileDiff(j)
-                    commit.add_filediff(filediff)
+                filediff = FileDiff(j)
+                commit.add_filediff(filediff)
 
         if len(self.commits) > 0:
             self.first_commit_date = datetime.date(
@@ -166,7 +121,7 @@ class Changes(object):
         return self.commits
 
     def __modify_authorinfo__(self, authors, key, commit):
-        if authors.get(key, None) == None:
+        if authors.get(key, None) is None:
             authors[key] = AuthorInfo()
 
         if commit.get_filediffs():
@@ -191,37 +146,85 @@ class Changes(object):
 
         return self.authors_dateinfo
 
-    def get_latest_author_by_email(self, name):
-        if not hasattr(name, 'decode'):
-            name = str.encode(name)
 
-        name = name.decode("unicode_escape", "ignore")
-        return self.authors_by_email[name]
+def get_all_repos(access_token):
+    repos = []
+    page = 1
+    url = 'https://api.github.com/orgs/industrydive/repos?per_page=100&page=%s&access_token=%s'
+    while True:
+        response = requests.get(url % (page, access_token))
 
-    def get_latest_email_by_author(self, name):
-        return self.emails_by_author[name]
+        try:
+            response.raise_for_status()
+        except requests.exceptions.HTTPError as e:
+            logging.error('Error: %s' % e)
 
-def is_valid_extension(string):
-    """
-    Hacky way to say all extensions are valid.
-    :param str string: The commit line.
-    :return: True
-    """
-    return True
+        response_json = response.json()
+        for repo in response_json:
+            repos.append({
+                'name': repo['name'],
+                'ssh_url': repo['ssh_url'],
+                'pushed_at': repo['pushed_at'],
+            })
+        # break if we are on a page with < 100 repos (since we've reached the end)
+        if len(response_json) == 100:
+            page = page + 1
+        else:
+            break
 
-def main():
-    for project_name in PROJECT_NAMES:
-        os.system('git clone git@github.com:industrydive/%s' % project_name)
-        repo_path = os.path.join(projects_path, project_name)
-
-        runner = DiveRunner()
-        runner.repo = repo_path
-        runner.project_name = project_name
-
-        runner.output()
+    return repos
 
 
-if __name__ == "__main__":
+@click.command()
+@click.option(
+    '--year',
+    default=datetime.datetime.today().year - 1,
+    help='Year to run git-authors for. Defaults to the previous year',
+)
+@click.option(
+    '--access-token',
+    help='Create a Github access token',
+)
+@click.option(
+    '--outfile',
+    'outfile_name',
+    default='git_stats.csv',
+    help='File name to write the git stats to',
+    required=True,
+)
+def main(year, access_token, outfile_name):
+    script_path = os.path.dirname(os.path.abspath(__file__))
+    path_to_outfile = os.path.join(script_path, outfile_name)
+
+    # create a temporary directory
+    temp_dir_path = mkdtemp()
+    os.chdir(temp_dir_path)
+
+    try:
+        with open(path_to_outfile, 'wb') as outfile:
+            outwriter = csv.writer(outfile)
+            outwriter.writerow(COLUMN_HEADERS)
+
+            repos = get_all_repos(access_token)
+
+            for repo in repos:
+                # if the repo has been pushed to after the first day of the target year
+                pushed_at_time = datetime.datetime.strptime(repo['pushed_at'], '%Y-%m-%dT%H:%M:%SZ')
+                if pushed_at_time > datetime.datetime(year, 1, 1):
+                    # clone just the git history to save bandwidth and disk space
+                    os.system('git clone %s --bare' % repo['ssh_url'])
+                    repo_path = os.path.join(temp_dir_path, '%s.git' % repo['name'])
+
+                    # run our analysis
+                    runner = DiveRunner(outwriter, year)
+                    runner.repo = repo_path
+                    runner.project_name = repo['name']
+
+                    runner.output()
+    finally:
+        # clean up our temp directory
+        shutil.rmtree(temp_dir_path)
+
+
+if __name__ == '__main__':
     main()
-
-outfile.close()
